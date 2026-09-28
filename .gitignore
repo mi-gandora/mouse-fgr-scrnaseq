@@ -1,0 +1,18 @@
+# Ignore heavy raw data and reference files
+*.fastq
+*.fastq.gz
+*.gtf
+*.gff
+*.fa
+*.fasta
+*.tabular
+
+# Ignore Salmon/Alevin indexes & output folders
+salmon_index/
+results/
+*.h5ad
+
+# Ignore OS/Python junk
+.DS_Store
+__pycache__/
+.ipynb_checkpoints/
