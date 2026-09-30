@@ -19,11 +19,14 @@ An end-to-end, production-grade single-cell RNA sequencing (scRNA-seq) workflow.
    - Executed `salmon alevin` using Drop-seq specifications (`--dropseq`, `-l ISR`) to quantify gene expression.
    - Retained complete cell barcode distribution (`--keepCBFraction 1.0`, `--freqThreshold 3`) for downstream background cell matrix evaluation (`emptyDrops`).
    - Generated cell-by-gene count matrix outputs in Matrix Market format (`quants_mat.mtx`).
+5. **Raw Barcode Quality Control Analysis**
+   - Extracted total read count frequencies per cell barcode from Alevin classification features (featureDump.txt).
+   - Constructed a log-log barcode rank plot (results/qc_plots/raw_barcode_rank_plot.png) to evaluate droplet capture efficiency and identify inflection points separating intact cells from ambient RNA.
 
 ## ⚙️ Environment Setup
 
 * **Environment Manager**: Conda / Mamba (`mouse_fetal_growth`).
-* **Core Dependencies**: Python (`3.10`), Salmon (`1.10.3`), SeqKit (`2.8.2`), Scanpy (`1.10.0`), AnnData (`0.10.0`).
+* **Core Dependencies**: Python (`3.10`), Salmon (`1.10.3`), SeqKit (`2.8.2`), Scanpy (`1.10.0`), AnnData (`0.10.0`), Matplotlib, Pandas.
 * **Environment Replication**:
   ```bash
   conda env create -f environment.yml
@@ -37,6 +40,8 @@ An end-to-end, production-grade single-cell RNA sequencing (scRNA-seq) workflow.
    - Parses GTF annotations into a two-column `tx2gene.tsv` map and filters the cDNA FASTA using `seqkit`.
 3. **`scripts/03_run_alevin.sh`**
    - Constructs the binary Salmon index and executes `salmon alevin` quantification.
+4. **`scripts/04_run_qc.sh`**
+   - Extract barcode frequencies and generate QC knee plot
 ---
 
 ## 📁 Repository Structure
@@ -54,8 +59,10 @@ mouse-fgr-scrnaseq/
 ├── ref/                    # (Local only) Reference genomes, transcript maps, and indexes
 └── results/                # (Local only) Alevin count matrices and feature metrics
     └── alevin_output/
-        └── alevin/
-            ├── quants_mat.mtx
-            ├── quants_mat_cols.txt
-            ├── quants_mat_rows.txt
-            └── featureDump.txt
+    |    └── alevin/
+    |        ├── quants_mat.mtx
+    |        ├── quants_mat_cols.txt
+    |        ├── quants_mat_rows.txt
+    |        └── featureDump.txt
+    └── qc_plots/
+        └── raw_barcode_rank_plot.png
