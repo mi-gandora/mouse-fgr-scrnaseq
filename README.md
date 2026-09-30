@@ -49,7 +49,7 @@ An end-to-end, production-grade single-cell RNA sequencing (scRNA-seq) workflow.
    - Constructs the binary Salmon index and executes `salmon alevin` quantification.
 4. **`scripts/04_run_qc.sh`**
    - Extract barcode frequencies and generate QC knee plot
-5. **`scripts/05_run_emptydrops.sh**
+5. **`scripts/05_run_emptydrops.sh`**
    - Annotate metadata and run emptyDrops cell filtering
 ---
 
