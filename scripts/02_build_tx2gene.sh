@@ -3,10 +3,10 @@ set -e
 
 echo "=== STEP 2: Building Transcript-to-Gene Map & Filtering FASTA ==="
 
-GTF="ref/Mus_musculus.GRCm38.100.gtf"
-FASTA="ref/Mus_musculus.GRCm38.cdna.all.fa"
-TX2GENE="ref/tx2gene.tsv"
-FILTERED_FASTA="ref/Filtered_FASTA.fa"
+GTF="../ref/Mus_musculus.GRCm38.100.gtf"
+FASTA="../ref/Mus_musculus.GRCm38.cdna.all.fa"
+TX2GENE="../ref/tx2gene.tsv"
+FILTERED_FASTA="../ref/Filtered_FASTA.fa"
 
 # 1. Parse GTF file to extract transcript_id.version -> gene_id.version mapping
 echo "-> Parsing GTF to extract transcript and gene IDs..."
@@ -28,11 +28,11 @@ awk '$3 == "transcript" {
 echo "-> Created tx2gene map with $(wc -l < ${TX2GENE}) entries."
 
 # 2. Extract transcript IDs list
-cut -f1 ${TX2GENE} > ref/valid_transcripts.txt
+cut -f1 ${TX2GENE} > ../ref/valid_transcripts.txt
 
 # 3. Filter FASTA using seqkit
 echo "-> Filtering cDNA FASTA to match annotated GTF transcripts..."
-seqkit grep -f ref/valid_transcripts.txt ${FASTA} > ${FILTERED_FASTA}
+seqkit grep -f ../ref/valid_transcripts.txt ${FASTA} > ${FILTERED_FASTA}
 
 echo "-> Filtered FASTA contains $(grep -c "^>" ${FILTERED_FASTA}) sequence entries."
 echo "=== Reference preparation complete! ==="

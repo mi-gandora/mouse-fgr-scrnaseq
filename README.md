@@ -19,9 +19,16 @@ An end-to-end, production-grade single-cell RNA sequencing (scRNA-seq) workflow.
    - Executed `salmon alevin` using Drop-seq specifications (`--dropseq`, `-l ISR`) to quantify gene expression.
    - Retained complete cell barcode distribution (`--keepCBFraction 1.0`, `--freqThreshold 3`) for downstream background cell matrix evaluation (`emptyDrops`).
    - Generated cell-by-gene count matrix outputs in Matrix Market format (`quants_mat.mtx`).
+
 5. **Raw Barcode Quality Control Analysis**
    - Extracted total read count frequencies per cell barcode from Alevin classification features (featureDump.txt).
    - Constructed a log-log barcode rank plot (results/qc_plots/raw_barcode_rank_plot.png) to evaluate droplet capture efficiency and identify inflection points separating intact cells from ambient RNA.
+
+6. **Matrix Transformation, Metadata Annotation & emptyDrops Filtering**
+   - Imported raw Alevin MTX count matrix into Scanpy AnnData structure.
+   - Parsed Ensembl GTF annotations to map gene_id identifiers to official gene_symbol names and flagged mitochondrial gene features (mito).
+   - Executed statistical ambient RNA filtering (emptyDrops) to distinguish true low-RNA cells from background droplets.
+   - Outputted filtered single-cell expression matrix in binary h5ad format (results/filtered_data/emptied_object.h5ad).
 
 ## ⚙️ Environment Setup
 
@@ -42,6 +49,8 @@ An end-to-end, production-grade single-cell RNA sequencing (scRNA-seq) workflow.
    - Constructs the binary Salmon index and executes `salmon alevin` quantification.
 4. **`scripts/04_run_qc.sh`**
    - Extract barcode frequencies and generate QC knee plot
+5. **`scripts/05_run_emptydrops.sh*
+   - Annotate metadata and run emptyDrops cell filtering
 ---
 
 ## 📁 Repository Structure
@@ -54,15 +63,21 @@ mouse-fgr-scrnaseq/
 ├── scripts/
 │   ├── 01_download_data.sh # Fetches raw FASTQs, Ensembl GTF/FASTA, and metadata
 │   ├── 02_build_tx2gene.sh # GTF parsing (tx2gene map) and seqkit FASTA filtering
-│   └── 03_run_alevin.sh   # Salmon indexing and Alevin single-cell quantification
+│   ├── 03_run_alevin.sh   # Salmon indexing and Alevin single-cell quantification
+│   ├── 04_qc_plots.py     # Python script to render log-log barcode rank plots
+│   ├── 04_run_qc.sh       # Execution wrapper for raw barcode QC processing
+│   ├── 05_run_emptydrops.py # Python script for matrix transformation & emptyDrops
+│   └── 05_run_emptydrops.sh # Execution wrapper for statistical emptyDrops filtering
 ├── data/                   # (Local only) Raw FASTQ files & experimental metadata
 ├── ref/                    # (Local only) Reference genomes, transcript maps, and indexes
 └── results/                # (Local only) Alevin count matrices and feature metrics
-    └── alevin_output/
-    |    └── alevin/
-    |        ├── quants_mat.mtx
-    |        ├── quants_mat_cols.txt
-    |        ├── quants_mat_rows.txt
-    |        └── featureDump.txt
+    ├── alevin_output/
+    │   └── alevin/
+    │       ├── featureDump.txt
+    │       ├── quants_mat_cols.txt
+    │       ├── quants_mat_rows.txt
+    │       └── quants_mat.mtx
+    ├── filtered_data/
+    │   └── emptied_object.h5ad
     └── qc_plots/
         └── raw_barcode_rank_plot.png
