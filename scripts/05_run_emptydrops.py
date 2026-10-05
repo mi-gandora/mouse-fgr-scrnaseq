@@ -47,7 +47,7 @@ def main():
     barcodes_file = os.path.join(alevin_dir, "quants_mat_rows.txt")
     gtf_file = "../ref/Mus_musculus.GRCm38.100.gtf"
     
-    output_dir = "../results/filtered_data"
+    output_dir = "../data/anndata_samples"
     os.makedirs(output_dir, exist_ok=True)
     
     # Read Alevin sparse matrix
@@ -95,7 +95,7 @@ def main():
 
     print(f"-> Filtered Matrix: Retained {adata_filtered.n_obs} cell-containing droplets")
 
-    output_h5ad = os.path.join(output_dir, "emptied_object.h5ad")
+    output_h5ad = os.path.join(output_dir, "N701.h5ad")
     adata_filtered.write(output_h5ad)
     print(f"=== Processed AnnData saved to {output_h5ad} ===")
 

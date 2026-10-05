@@ -28,7 +28,12 @@ An end-to-end, production-grade single-cell RNA sequencing (scRNA-seq) workflow.
    - Imported raw Alevin MTX count matrix into Scanpy AnnData structure.
    - Parsed Ensembl GTF annotations to map gene_id identifiers to official gene_symbol names and flagged mitochondrial gene features (mito).
    - Executed statistical ambient RNA filtering (emptyDrops) to distinguish true low-RNA cells from background droplets.
-   - Outputted filtered single-cell expression matrix in binary h5ad format (results/filtered_data/emptied_object.h5ad).
+   - Outputted filtered single-cell expression matrix in binary h5ad format (data/anndata_samples/N701.h5ad)).
+
+7. **Multi-Sample AnnData Concatenation**
+   - Loaded single-cell expression matrices for all 7 mouse FGR samples (N701–N707).
+   - Merged objects along the observation axis using gene intersection (join="inner").
+   - Indexed cell barcodes with batch identifiers (-0, -1, etc.) and mapped batch categories (results/combined_data/Combined_Object.h5ad).
 
 ## ⚙️ Environment Setup
 
@@ -41,16 +46,18 @@ An end-to-end, production-grade single-cell RNA sequencing (scRNA-seq) workflow.
 
 ## 🚀 Pipeline Execution Scripts
 
-1. **`scripts/01_download_data.sh`**
+1. **`./scripts/01_download_data.sh`**
    - Downloads raw FASTQ files, experimental metadata, cDNA FASTA, and GTF annotations from Zenodo/Ensembl.
-2. **`scripts/02_build_tx2gene.sh`**
+2. **`./scripts/02_build_tx2gene.sh`**
    - Parses GTF annotations into a two-column `tx2gene.tsv` map and filters the cDNA FASTA using `seqkit`.
-3. **`scripts/03_run_alevin.sh`**
+3. **`./scripts/03_run_alevin.sh`**
    - Constructs the binary Salmon index and executes `salmon alevin` quantification.
-4. **`scripts/04_run_qc.sh`**
+4. **`./scripts/04_run_qc.sh`**
    - Extract barcode frequencies and generate QC knee plot
-5. **`scripts/05_run_emptydrops.sh`**
+5. **`./scripts/05_run_emptydrops.sh`**
    - Annotate metadata and run emptyDrops cell filtering
+6. **`./scripts/06_concatenate_samples.sh`**
+   - Concatenate multi-sample datasets into Combined_Object.h5ad
 ---
 
 ## 📁 Repository Structure
@@ -59,24 +66,34 @@ An end-to-end, production-grade single-cell RNA sequencing (scRNA-seq) workflow.
 mouse-fgr-scrnaseq/
 ├── README.md               # Project documentation and execution instructions
 ├── environment.yml         # Exported Conda environment specifications
-├── .gitignore              # Ignores large raw FASTQs, references, and binary indexes
+├── .gitignore              # Ignores large raw FASTQs, references, and h5ad datasets
 ├── scripts/
-│   ├── 01_download_data.sh # Fetches raw FASTQs, Ensembl GTF/FASTA, and metadata
+│   ├── 01_download_data.sh # Fetches raw FASTQs, GTF/FASTA references, and N702-N707 AnnData samples
 │   ├── 02_build_tx2gene.sh # GTF parsing (tx2gene map) and seqkit FASTA filtering
 │   ├── 03_run_alevin.sh   # Salmon indexing and Alevin single-cell quantification
 │   ├── 04_qc_plots.py     # Python script to render log-log barcode rank plots
 │   ├── 04_run_qc.sh       # Execution wrapper for raw barcode QC processing
-│   ├── 05_run_emptydrops.py # Python script for matrix transformation & emptyDrops
-│   └── 05_run_emptydrops.sh # Execution wrapper for statistical emptyDrops filtering
+│   ├── 05_run_emptydrops.py # Python script for MTX transformation & emptyDrops filtering
+│   ├── 05_run_emptydrops.sh # Execution wrapper for statistical emptyDrops filtering
+│   ├── 06_concatenate_samples.py # Python script to concatenate N701-N707 AnnData objects
+│   └── 06_concatenate_samples.sh # Execution wrapper for multi-sample concatenation
 ├── data/                   # (Local only) Raw FASTQ files & experimental metadata
+│   ├── raw_fastqs/
+│   ├── metadata/
+│   └── anndata_samples/    # Holds pre-processed h5ad objects for all 7 mouse FGR samples
+│       ├── N701.h5ad
+│       ├── N702.h5ad
+│       ├── N703.h5ad
+│       ├── N704.h5ad
+│       ├── N705.h5ad
+│       ├── N706.h5ad
+│       └── N707.h5ad
 ├── ref/                    # (Local only) Reference genomes, transcript maps, and indexes
 └── results/                # (Local only) Alevin count matrices and feature metrics
     ├── alevin_output/
     │   └── alevin/
-    │       ├── featureDump.txt
-    │       ├── quants_mat_cols.txt
-    │       ├── quants_mat_rows.txt
-    │       └── quants_mat.mtx
+    ├── combined_data/
+    │   └── Combined_Object.h5ad
     ├── filtered_data/
     │   └── emptied_object.h5ad
     └── qc_plots/

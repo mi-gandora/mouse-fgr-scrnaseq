@@ -1,0 +1,16 @@
+{
+    "salmon_version": "1.10.3",
+    "libType": "ISR",
+    "mates1": "../data/fastq/N701-Read1.fastq",
+    "mates2": "../data/fastq/N701-Read2.fastq",
+    "dropseq": [],
+    "index": "../ref/salmon_index",
+    "threads": "4",
+    "output": "../results/alevin_output",
+    "tgMap": "../ref/tx2gene.tsv",
+    "keepCBFraction": "1.0",
+    "freqThreshold": "3",
+    "dumpMtx": [],
+    "dumpFeatures": [],
+    "auxDir": "aux_info"
+}
