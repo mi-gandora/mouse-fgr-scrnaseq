@@ -21,19 +21,24 @@ An end-to-end, production-grade single-cell RNA sequencing (scRNA-seq) workflow.
    - Generated cell-by-gene count matrix outputs in Matrix Market format (`quants_mat.mtx`).
 
 5. **Raw Barcode Quality Control Analysis**
-   - Extracted total read count frequencies per cell barcode from Alevin classification features (featureDump.txt).
-   - Constructed a log-log barcode rank plot (results/qc_plots/raw_barcode_rank_plot.png) to evaluate droplet capture efficiency and identify inflection points separating intact cells from ambient RNA.
+   - Extracted total read count frequencies per cell barcode from Alevin classification features (`featureDump.txt`).
+   - Constructed a log-log barcode rank plot (`results/qc_plots/raw_barcode_rank_plot.png`) to evaluate droplet capture efficiency and identify inflection points separating intact cells from ambient RNA.
 
 6. **Matrix Transformation, Metadata Annotation & emptyDrops Filtering**
    - Imported raw Alevin MTX count matrix into Scanpy AnnData structure.
    - Parsed Ensembl GTF annotations to map gene_id identifiers to official gene_symbol names and flagged mitochondrial gene features (mito).
-   - Executed statistical ambient RNA filtering (emptyDrops) to distinguish true low-RNA cells from background droplets.
-   - Outputted filtered single-cell expression matrix in binary h5ad format (data/anndata_samples/N701.h5ad)).
+   - Executed statistical ambient RNA filtering (`emptyDrops`) to distinguish true low-RNA cells from background droplets.
+   - Outputted filtered single-cell expression matrix in binary h5ad format (`data/anndata_samples/N701.h5ad`)).
 
 7. **Multi-Sample AnnData Concatenation**
-   - Loaded single-cell expression matrices for all 7 mouse FGR samples (N701–N707).
-   - Merged objects along the observation axis using gene intersection (join="inner").
-   - Indexed cell barcodes with batch identifiers (-0, -1, etc.) and mapped batch categories (results/combined_data/Combined_Object.h5ad).
+   - Loaded single-cell expression matrices for all 7 mouse FGR samples (`N701–N707`).
+   - Merged objects along the observation axis using gene intersection (`join="inner"`).
+   - Indexed cell barcodes with batch identifiers (`-0, -1, etc.`) and mapped batch categories (`results/combined_data/Combined_Object.h5ad`).
+
+8. **Cell Metadata Mapping & Batch Annotation**
+   - Mapped sample metadata onto cell observations (`obs`): assigned sex (`male vs female`) and genotype (`wildtype vs knockout`) categories based on batch origins.
+   - Renamed batch indices (`0–6`) to formal sample identifiers (`N701–N707`).
+   - Exported fully annotated single-cell dataset (`results/combined_data/Batched_Object.h5ad`).
 
 ## ⚙️ Environment Setup
 
@@ -58,43 +63,40 @@ An end-to-end, production-grade single-cell RNA sequencing (scRNA-seq) workflow.
    - Annotate metadata and run emptyDrops cell filtering
 6. **`./scripts/06_concatenate_samples.sh`**
    - Concatenate multi-sample datasets into Combined_Object.h5ad
+7. **`./scripts/07_add_metadata.sh`**
+   - Annotate sex, genotype, and batch categories into Batched_Object.h5ad
+
 ---
 
 ## 📁 Repository Structure
 
+
 ```text
 mouse-fgr-scrnaseq/
-├── README.md               # Project documentation and execution instructions
-├── environment.yml         # Exported Conda environment specifications
-├── .gitignore              # Ignores large raw FASTQs, references, and h5ad datasets
+├── README.md                       # Project documentation and execution instructions
+├── environment.yml                 # Exported Conda environment specifications
+├── .gitignore                      # Ignores large raw FASTQs, references, and h5ad datasets
 ├── scripts/
-│   ├── 01_download_data.sh # Fetches raw FASTQs, GTF/FASTA references, and N702-N707 AnnData samples
-│   ├── 02_build_tx2gene.sh # GTF parsing (tx2gene map) and seqkit FASTA filtering
-│   ├── 03_run_alevin.sh   # Salmon indexing and Alevin single-cell quantification
-│   ├── 04_qc_plots.py     # Python script to render log-log barcode rank plots
-│   ├── 04_run_qc.sh       # Execution wrapper for raw barcode QC processing
-│   ├── 05_run_emptydrops.py # Python script for MTX transformation & emptyDrops filtering
-│   ├── 05_run_emptydrops.sh # Execution wrapper for statistical emptyDrops filtering
-│   ├── 06_concatenate_samples.py # Python script to concatenate N701-N707 AnnData objects
-│   └── 06_concatenate_samples.sh # Execution wrapper for multi-sample concatenation
-├── data/                   # (Local only) Raw FASTQ files & experimental metadata
+│   ├── 01_download_data.sh         # Fetches raw FASTQs, GTF/FASTA references, and N702-N707 AnnData samples
+│   ├── 02_build_tx2gene.sh         # GTF parsing (tx2gene map) and seqkit FASTA filtering
+│   ├── 03_run_alevin.sh            # Salmon indexing and Alevin single-cell quantification
+│   ├── 04_qc_plots.py              # Python script to render log-log barcode rank plots
+│   ├── 04_run_qc.sh                # Execution wrapper for raw barcode QC processing
+│   ├── 05_run_emptydrops.py        # Python script for MTX transformation & emptyDrops filtering
+│   ├── 05_run_emptydrops.sh        # Execution wrapper for statistical emptyDrops filtering
+│   ├── 06_concatenate_samples.py   # Python script to concatenate N701-N707 AnnData objects
+│   ├── 06_concatenate_samples.sh   # Execution wrapper for multi-sample concatenation
+│   ├── 07_add_metadata.py          # Python script to add sex, genotype, and batch categories
+│   └── 07_add_metadata.sh          # Execution wrapper for metadata annotation
+├── data/                           # (Local only) Raw FASTQ files & experimental metadata
 │   ├── raw_fastqs/
 │   ├── metadata/
-│   └── anndata_samples/    # Holds pre-processed h5ad objects for all 7 mouse FGR samples
-│       ├── N701.h5ad
-│       ├── N702.h5ad
-│       ├── N703.h5ad
-│       ├── N704.h5ad
-│       ├── N705.h5ad
-│       ├── N706.h5ad
-│       └── N707.h5ad
-├── ref/                    # (Local only) Reference genomes, transcript maps, and indexes
-└── results/                # (Local only) Alevin count matrices and feature metrics
+│   └── anndata_samples/            # Holds pre-processed h5ad objects for all 7 mouse FGR samples
+├── ref/                            # (Local only) Reference genomes, transcript maps, and indexes
+└── results/                        # (Local only) Alevin count matrices and feature metrics
     ├── alevin_output/
-    │   └── alevin/
     ├── combined_data/
-    │   └── Combined_Object.h5ad
+    │   ├── Combined_Object.h5ad
+    │   └── Batched_Object.h5ad
     ├── filtered_data/
-    │   └── emptied_object.h5ad
     └── qc_plots/
-        └── raw_barcode_rank_plot.png
