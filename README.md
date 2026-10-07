@@ -40,6 +40,11 @@ An end-to-end, production-grade single-cell RNA sequencing (scRNA-seq) workflow.
    - Renamed batch indices (`0–6`) to formal sample identifiers (`N701–N707`).
    - Exported fully annotated single-cell dataset (`results/combined_data/Batched_Object.h5ad`).
 
+9. **QC Metrics Calculation & Visualization**
+   - Calculated cell and gene quality metrics using `sc.pp.calculate_qc_metrics` with mito gene flags.
+   - Exported calculated metrics object to `results/combined_data/QC_Object.h5ad`.
+   - Rendered and saved diagnostic violin plots (`Violin_log_genotype.png`, `Violin_log_sex.png`, `Violin_log_batch.png`) and scatter plots (`Scatter_UMIxMito.png`, `Scatter_GenesxMito.png`, `Scatter_GenesxUMI.png`) into (`results/qc_plots/`).
+
 ## ⚙️ Environment Setup
 
 * **Environment Manager**: Conda / Mamba (`mouse_fetal_growth`).
@@ -65,6 +70,8 @@ An end-to-end, production-grade single-cell RNA sequencing (scRNA-seq) workflow.
    - Concatenate multi-sample datasets into Combined_Object.h5ad
 7. **`./scripts/07_add_metadata.sh`**
    - Annotate sex, genotype, and batch categories into Batched_Object.h5ad
+8. **`./scripts/08_calculate_qc_metrics.sh`**
+   - Compute Scanpy QC metrics and save violin/scatter plots
 
 ---
 
@@ -73,30 +80,35 @@ An end-to-end, production-grade single-cell RNA sequencing (scRNA-seq) workflow.
 
 ```text
 mouse-fgr-scrnaseq/
-├── README.md                       # Project documentation and execution instructions
-├── environment.yml                 # Exported Conda environment specifications
-├── .gitignore                      # Ignores large raw FASTQs, references, and h5ad datasets
+├── README.md               # Project documentation and execution instructions
+├── environment.yml         # Exported Conda environment specifications
+├── .gitignore              # Ignores large raw FASTQs, references, and h5ad datasets
 ├── scripts/
-│   ├── 01_download_data.sh         # Fetches raw FASTQs, GTF/FASTA references, and N702-N707 AnnData samples
-│   ├── 02_build_tx2gene.sh         # GTF parsing (tx2gene map) and seqkit FASTA filtering
-│   ├── 03_run_alevin.sh            # Salmon indexing and Alevin single-cell quantification
-│   ├── 04_qc_plots.py              # Python script to render log-log barcode rank plots
-│   ├── 04_run_qc.sh                # Execution wrapper for raw barcode QC processing
-│   ├── 05_run_emptydrops.py        # Python script for MTX transformation & emptyDrops filtering
-│   ├── 05_run_emptydrops.sh        # Execution wrapper for statistical emptyDrops filtering
-│   ├── 06_concatenate_samples.py   # Python script to concatenate N701-N707 AnnData objects
-│   ├── 06_concatenate_samples.sh   # Execution wrapper for multi-sample concatenation
-│   ├── 07_add_metadata.py          # Python script to add sex, genotype, and batch categories
-│   └── 07_add_metadata.sh          # Execution wrapper for metadata annotation
-├── data/                           # (Local only) Raw FASTQ files & experimental metadata
-│   ├── raw_fastqs/
-│   ├── metadata/
-│   └── anndata_samples/            # Holds pre-processed h5ad objects for all 7 mouse FGR samples
-├── ref/                            # (Local only) Reference genomes, transcript maps, and indexes
-└── results/                        # (Local only) Alevin count matrices and feature metrics
+│   ├── 01_download_data.sh # Fetches raw FASTQs, GTF/FASTA references, and N702-N707 AnnData samples
+│   ├── 02_build_tx2gene.sh # GTF parsing (tx2gene map) and seqkit FASTA filtering
+│   ├── 03_run_alevin.sh   # Salmon indexing and Alevin single-cell quantification
+│   ├── 04_qc_plots.py     # Python script to render log-log barcode rank plots
+│   ├── 04_run_qc.sh       # Execution wrapper for raw barcode QC processing
+│   ├── 05_run_emptydrops.py # Python script for MTX transformation & emptyDrops filtering
+│   ├── 05_run_emptydrops.sh # Execution wrapper for statistical emptyDrops filtering
+│   ├── 06_concatenate_samples.py # Python script to concatenate N701-N707 AnnData objects
+│   ├── 06_concatenate_samples.sh # Execution wrapper for multi-sample concatenation
+│   ├── 07_add_metadata.py # Python script to add sex, genotype, and batch categories
+│   ├── 07_add_metadata.sh # Execution wrapper for metadata annotation
+│   ├── 08_calculate_qc_metrics.py # Python script for QC metrics & visualization
+│   └── 08_calculate_qc_metrics.sh # Execution wrapper for QC metrics pipeline
+├── data/                   # (Local only) Raw FASTQ files & experimental metadata
+├── ref/                    # (Local only) Reference genomes, transcript maps, and indexes
+└── results/                # (Local only) Alevin count matrices, h5ad files, and QC plots
     ├── alevin_output/
     ├── combined_data/
     │   ├── Combined_Object.h5ad
-    │   └── Batched_Object.h5ad
-    ├── filtered_data/
+    │   ├── Batched_Object.h5ad
+    │   └── QC_Object.h5ad
     └── qc_plots/
+        ├── Violin_log_genotype.png
+        ├── Violin_log_sex.png
+        ├── Violin_log_batch.png
+        ├── Scatter_UMIxMito.png
+        ├── Scatter_GenesxMito.png
+        └── Scatter_GenesxUMI.png

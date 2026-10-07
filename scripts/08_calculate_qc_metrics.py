@@ -1,0 +1,109 @@
+"""
+Script: 08_calculate_qc_metrics.py
+Description: Calculate QC metrics using scanpy.pp.calculate_qc_metrics, print summary,
+             and generate quality control violin and scatter plots.
+"""
+
+import os
+import numpy as np
+import scanpy as sc
+import matplotlib.pyplot as plt
+
+# Ensure matplotlib runs headless
+plt.switch_backend("Agg")
+
+def main():
+    input_path = "../results/combined_data/Batched_Object.h5ad"
+    output_dir = "../results/combined_data"
+    output_h5ad = os.path.join(output_dir, "QC_Object.h5ad")
+    plots_dir = "../results/qc_plots"
+    
+    os.makedirs(plots_dir, exist_ok=True)
+    
+    if not os.path.exists(input_path):
+        raise FileNotFoundError(f"Input file not found: {input_path}")
+        
+    print(f"=== STEP 1: Loading Batched AnnData Object ({input_path}) ===")
+    adata = sc.read_h5ad(input_path)
+    
+    # Verify or set mito annotation column in var
+    if "mito" not in adata.var.columns:
+        print("Flagging mitochondrial genes starting with 'mt-' or 'MT-'...")
+        adata.var["mito"] = adata.var_names.str.startswith(("mt-", "MT-"))
+        
+    print("\n=== STEP 2: Calculating Quality Control Metrics ===")
+    sc.pp.calculate_qc_metrics(
+        adata,
+        qc_vars=["mito"],
+        percent_top=None,
+        log1p=True,
+        inplace=True
+    )
+    
+    print(f"\n--- AnnData Object Summary ---")
+    print(f"Cells (n_obs): {adata.n_obs}")
+    print(f"Genes (n_vars): {adata.n_vars}")
+    print("\nCalculated Observation Metrics (obs keys):")
+    print([k for k in adata.obs.columns if "counts" in k or "mito" in k])
+    
+    print("\n=== STEP 3: Generating QC Violin Plots ===")
+    sc.set_figure_params(dpi=300, fontsize=10, frameon=True)
+    
+    metrics = ["log1p_total_counts", "log1p_n_genes_by_counts", "pct_counts_mito"]
+    groupings = ["genotype", "sex", "batch"]
+    
+    for group in groupings:
+        fig = sc.pl.violin(
+            adata,
+            keys=metrics,
+            groupby=group,
+            jitter=0.4,
+            multi_panel=True,
+            show=False
+        )
+        plot_path = os.path.join(plots_dir, f"Violin_log_{group}.png")
+        plt.savefig(plot_path, bbox_inches="tight")
+        plt.close()
+        print(f"Saved: {plot_path}")
+        
+    print("\n=== STEP 4: Generating QC Scatter Plots ===")
+    
+    # 1. Scatter: UMI vs Mito
+    sc.pl.scatter(
+        adata,
+        x="log1p_total_counts",
+        y="pct_counts_mito",
+        show=False
+    )
+    plt.savefig(os.path.join(plots_dir, "Scatter_UMIxMito.png"), bbox_inches="tight")
+    plt.close()
+    
+    # 2. Scatter: Genes vs Mito
+    sc.pl.scatter(
+        adata,
+        x="log1p_n_genes_by_counts",
+        y="pct_counts_mito",
+        show=False
+    )
+    plt.savefig(os.path.join(plots_dir, "Scatter_GenesxMito.png"), bbox_inches="tight")
+    plt.close()
+    
+    # 3. Scatter: Genes vs UMI (colored by pct_counts_mito)
+    sc.pl.scatter(
+        adata,
+        x="log1p_n_genes_by_counts",
+        y="log1p_total_counts",
+        color="pct_counts_mito",
+        show=False
+    )
+    plt.savefig(os.path.join(plots_dir, "Scatter_GenesxUMI.png"), bbox_inches="tight")
+    plt.close()
+    
+    print(f"All scatter plots saved to {plots_dir}/")
+    
+    print("\n=== STEP 5: Saving QC AnnData Object ===")
+    adata.write(output_h5ad)
+    print(f"=== Successfully saved QC Object to {output_h5ad} ===")
+
+if __name__ == "__main__":
+    main()
