@@ -50,6 +50,13 @@ An end-to-end, production-grade single-cell RNA sequencing (scRNA-seq) workflow.
     - Retained 20,510 cells (`64.76% of raw dataset`) and removed unexpressed genes (`min_cells=3`).
     - Exported cleaned dataset to `results/combined_data/Filtered_Object.h5ad`.
 
+11. **Library Normalization, Log Transformation, HVG Selection & Scaling**
+    - Normalized total count depth across cells to 10,000 UMIs (`sc.pp.normalize_total`).
+    - Log-transformed normalized expression values (`sc.pp.log1p`).
+    - Identified top 2,000 highly variable genes using the Seurat flavor (`sc.pp.highly_variable_genes`).
+    - Scaled gene expression to unit variance with clipping at max_value=10 (`sc.pp.scale`).
+    - Exported preprocessed matrix to `results/combined_data/Normalized_Scaled_Object.h5ad`.
+
 ## ⚙️ Environment Setup
 
 * **Environment Manager**: Conda / Mamba (`mouse_fetal_growth`).
@@ -79,40 +86,44 @@ An end-to-end, production-grade single-cell RNA sequencing (scRNA-seq) workflow.
    - Compute Scanpy QC metrics and save violin/scatter plots
 9. **`./scripts/09_filter_cells_and_genes.sh`**
    - Filter low-quality cells and remove unexpressed genes
+10. **`./scripts/10_normalize_log_hvg_scale.sh`**
+   - Normalizes total count, log-transforms normalized values, identifies top 2,000 highly variable genes and scales gene expression to unit variance.
 
 ---
 
 ## 📁 Repository Structure
 
-
 ```text
 mouse-fgr-scrnaseq/
-├── README.md               # Project documentation and execution instructions
-├── environment.yml         # Exported Conda environment specifications
-├── .gitignore              # Ignores large raw FASTQs, references, and h5ad datasets
+├── README.md                           # Project documentation and execution instructions
+├── environment.yml                     # Exported Conda environment specifications
+├── .gitignore                          # Ignores large raw FASTQs, references, and h5ad datasets
 ├── scripts/
-│   ├── 01_download_data.sh # Fetches raw FASTQs, GTF/FASTA references, and N702-N707 AnnData samples
-│   ├── 02_build_tx2gene.sh # GTF parsing (tx2gene map) and seqkit FASTA filtering
-│   ├── 03_run_alevin.sh   # Salmon indexing and Alevin single-cell quantification
-│   ├── 04_qc_plots.py     # Python script to render log-log barcode rank plots
-│   ├── 04_run_qc.sh       # Execution wrapper for raw barcode QC processing
-│   ├── 05_run_emptydrops.py # Python script for MTX transformation & emptyDrops filtering
-│   ├── 05_run_emptydrops.sh # Execution wrapper for statistical emptyDrops filtering
-│   ├── 06_concatenate_samples.py # Python script to concatenate N701-N707 AnnData objects
-│   ├── 06_concatenate_samples.sh # Execution wrapper for multi-sample concatenation
-│   ├── 07_add_metadata.py # Python script to add sex, genotype, and batch categories
-│   ├── 07_add_metadata.sh # Execution wrapper for metadata annotation
-│   ├── 08_calculate_qc_metrics.py # Python script for QC metrics & visualization
-│   ├── 08_calculate_qc_metrics.sh # Execution wrapper for QC metrics pipeline
-│   ├── 09_filter_cells_and_genes.py # Python script to apply cell QC thresholds & min_cells gene filter
-│   └── 09_filter_cells_and_genes.sh # Execution wrapper for cell and gene filtering
-├── data/                   # (Local only) Raw FASTQ files & experimental metadata
-├── ref/                    # (Local only) Reference genomes, transcript maps, and indexes
-└── results/                # (Local only) Alevin count matrices, h5ad files, and QC plots
+│   ├── 01_download_data.sh             # Fetches raw FASTQs, GTF/FASTA references, and N702-N707 AnnData samples
+│   ├── 02_build_tx2gene.sh             # GTF parsing (tx2gene map) and seqkit FASTA filtering
+│   ├── 03_run_alevin.sh                # Salmon indexing and Alevin single-cell quantification
+│   ├── 04_qc_plots.py                  # Python script to render log-log barcode rank plots
+│   ├── 04_run_qc.sh                    # Execution wrapper for raw barcode QC processing
+│   ├── 05_run_emptydrops.py            # Python script for MTX transformation & emptyDrops filtering
+│   ├── 05_run_emptydrops.sh            # Execution wrapper for statistical emptyDrops filtering
+│   ├── 06_concatenate_samples.py       # Python script to concatenate N701-N707 AnnData objects
+│   ├── 06_concatenate_samples.sh       # Execution wrapper for multi-sample concatenation
+│   ├── 07_add_metadata.py              # Python script to add sex, genotype, and batch categories
+│   ├── 07_add_metadata.sh              # Execution wrapper for metadata annotation
+│   ├── 08_calculate_qc_metrics.py      # Python script for QC metrics & visualization
+│   ├── 08_calculate_qc_metrics.sh      # Execution wrapper for QC metrics pipeline
+│   ├── 09_filter_cells_and_genes.py    # Python script to apply cell QC thresholds & min_cells gene filter
+│   ├── 09_filter_cells_and_genes.sh    # Execution wrapper for cell and gene filtering
+│   ├── 10_normalize_log_hvg_scale.py   # Python script for normalization, log1p, HVGs, and scaling
+│   └── 10_normalize_log_hvg_scale.sh   # Execution wrapper for preprocessing pipeline
+├── data/                               # (Local only) Raw FASTQ files & experimental metadata
+├── ref/                                # (Local only) Reference genomes, transcript maps, and indexes
+└── results/                            # (Local only) Alevin count matrices, h5ad files, and QC plots
     ├── alevin_output/
     ├── combined_data/
     │   ├── Combined_Object.h5ad
     │   ├── Batched_Object.h5ad
     │   ├── QC_Object.h5ad
-    │   └── Filtered_Object.h5ad
-    └── qc_plots/
+    │   ├── Filtered_Object.h5ad
+    │   └── Normalized_Scaled_Object.h5ad
+    └── qc_plots
