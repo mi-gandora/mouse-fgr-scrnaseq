@@ -26,12 +26,30 @@ def main():
     print(f"=== STEP 1: Loading Batched AnnData Object ({input_path}) ===")
     adata = sc.read_h5ad(input_path)
     
-    # Verify or set mito annotation column in var
+    print("\n=== STEP 2: Cleaning & Validating Mitochondrial Flags ===")
+    # Check if 'mito' column exists; if not, create boolean vector from var_names
     if "mito" not in adata.var.columns:
-        print("Flagging mitochondrial genes starting with 'mt-' or 'MT-'...")
-        adata.var["mito"] = adata.var_names.str.startswith(("mt-", "MT-"))
-        
-    print("\n=== STEP 2: Calculating Quality Control Metrics ===")
+        print("Flagging mitochondrial genes starting with 'mt-', 'Mt-', or 'MT-'...")
+        adata.var["mito"] = adata.var_names.str.startswith(("mt-", "Mt-", "MT-"))
+    else:
+        # If 'mito' already exists, force cast it to strict boolean type
+        print("Existing 'mito' column found. Coercing to strict boolean format...")
+        if adata.var["mito"].dtype == object or str(adata.var["mito"].dtype).startswith("category"):
+            # Check if strings/categories equal True/'true'/'1'
+            adata.var["mito"] = adata.var["mito"].astype(str).str.lower().isin(["true", "1"])
+        else:
+            adata.var["mito"] = adata.var["mito"].astype(bool)
+            
+    # If no mitochondrial genes were flagged by boolean conversion, retry using gene names/symbols
+    if adata.var["mito"].sum() == 0:
+        print("Re-evaluating mitochondrial genes across var_names and gene_ids...")
+        adata.var["mito"] = adata.var_names.str.startswith(("mt-", "Mt-", "MT-"))
+        if "gene_symbols" in adata.var.columns and adata.var["mito"].sum() == 0:
+            adata.var["mito"] = adata.var["gene_symbols"].astype(str).str.startswith(("mt-", "Mt-", "MT-"))
+
+    print(f"Total mitochondrial genes flagged: {adata.var['mito'].sum()}")
+
+    print("\n=== STEP 3: Calculating Quality Control Metrics ===")
     sc.pp.calculate_qc_metrics(
         adata,
         qc_vars=["mito"],
@@ -46,29 +64,29 @@ def main():
     print("\nCalculated Observation Metrics (obs keys):")
     print([k for k in adata.obs.columns if "counts" in k or "mito" in k])
     
-    print("\n=== STEP 3: Generating QC Violin Plots ===")
+    print("\n=== STEP 4: Generating QC Violin Plots ===")
     sc.set_figure_params(dpi=300, fontsize=10, frameon=True)
     
     metrics = ["log1p_total_counts", "log1p_n_genes_by_counts", "pct_counts_mito"]
     groupings = ["genotype", "sex", "batch"]
     
     for group in groupings:
-        fig = sc.pl.violin(
-            adata,
-            keys=metrics,
-            groupby=group,
-            jitter=0.4,
-            multi_panel=True,
-            show=False
-        )
-        plot_path = os.path.join(plots_dir, f"Violin_log_{group}.png")
-        plt.savefig(plot_path, bbox_inches="tight")
-        plt.close()
-        print(f"Saved: {plot_path}")
+        if group in adata.obs.columns:
+            fig = sc.pl.violin(
+                adata,
+                keys=metrics,
+                groupby=group,
+                jitter=0.4,
+                multi_panel=True,
+                show=False
+            )
+            plot_path = os.path.join(plots_dir, f"Violin_log_{group}.png")
+            plt.savefig(plot_path, bbox_inches="tight")
+            plt.close()
+            print(f"Saved: {plot_path}")
         
-    print("\n=== STEP 4: Generating QC Scatter Plots ===")
+    print("\n=== STEP 5: Generating QC Scatter Plots ===")
     
-    # 1. Scatter: UMI vs Mito
     sc.pl.scatter(
         adata,
         x="log1p_total_counts",
@@ -78,7 +96,6 @@ def main():
     plt.savefig(os.path.join(plots_dir, "Scatter_UMIxMito.png"), bbox_inches="tight")
     plt.close()
     
-    # 2. Scatter: Genes vs Mito
     sc.pl.scatter(
         adata,
         x="log1p_n_genes_by_counts",
@@ -88,7 +105,6 @@ def main():
     plt.savefig(os.path.join(plots_dir, "Scatter_GenesxMito.png"), bbox_inches="tight")
     plt.close()
     
-    # 3. Scatter: Genes vs UMI (colored by pct_counts_mito)
     sc.pl.scatter(
         adata,
         x="log1p_n_genes_by_counts",
@@ -101,7 +117,7 @@ def main():
     
     print(f"All scatter plots saved to {plots_dir}/")
     
-    print("\n=== STEP 5: Saving QC AnnData Object ===")
+    print("\n=== STEP 6: Saving QC AnnData Object ===")
     adata.write(output_h5ad)
     print(f"=== Successfully saved QC Object to {output_h5ad} ===")
 

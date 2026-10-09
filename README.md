@@ -45,6 +45,11 @@ An end-to-end, production-grade single-cell RNA sequencing (scRNA-seq) workflow.
    - Exported calculated metrics object to `results/combined_data/QC_Object.h5ad`.
    - Rendered and saved diagnostic violin plots (`Violin_log_genotype.png`, `Violin_log_sex.png`, `Violin_log_batch.png`) and scatter plots (`Scatter_UMIxMito.png`, `Scatter_GenesxMito.png`, `Scatter_GenesxUMI.png`) into (`results/qc_plots/`).
 
+10. **Cell & Gene Threshold Filtering**
+    - Filtered low-quality cells using customized thresholds: `pct_counts_mito < 5.0%`, `log1p_total_counts > 5.5`, and `log1p_n_genes_by_counts > 5.0`.
+    - Retained 20,510 cells (`64.76% of raw dataset`) and removed unexpressed genes (`min_cells=3`).
+    - Exported cleaned dataset to `results/combined_data/Filtered_Object.h5ad`.
+
 ## ⚙️ Environment Setup
 
 * **Environment Manager**: Conda / Mamba (`mouse_fetal_growth`).
@@ -72,6 +77,8 @@ An end-to-end, production-grade single-cell RNA sequencing (scRNA-seq) workflow.
    - Annotate sex, genotype, and batch categories into Batched_Object.h5ad
 8. **`./scripts/08_calculate_qc_metrics.sh`**
    - Compute Scanpy QC metrics and save violin/scatter plots
+9. **`./scripts/09_filter_cells_and_genes.sh`**
+   - Filter low-quality cells and remove unexpressed genes
 
 ---
 
@@ -96,7 +103,9 @@ mouse-fgr-scrnaseq/
 │   ├── 07_add_metadata.py # Python script to add sex, genotype, and batch categories
 │   ├── 07_add_metadata.sh # Execution wrapper for metadata annotation
 │   ├── 08_calculate_qc_metrics.py # Python script for QC metrics & visualization
-│   └── 08_calculate_qc_metrics.sh # Execution wrapper for QC metrics pipeline
+│   ├── 08_calculate_qc_metrics.sh # Execution wrapper for QC metrics pipeline
+│   ├── 09_filter_cells_and_genes.py # Python script to apply cell QC thresholds & min_cells gene filter
+│   └── 09_filter_cells_and_genes.sh # Execution wrapper for cell and gene filtering
 ├── data/                   # (Local only) Raw FASTQ files & experimental metadata
 ├── ref/                    # (Local only) Reference genomes, transcript maps, and indexes
 └── results/                # (Local only) Alevin count matrices, h5ad files, and QC plots
@@ -104,11 +113,6 @@ mouse-fgr-scrnaseq/
     ├── combined_data/
     │   ├── Combined_Object.h5ad
     │   ├── Batched_Object.h5ad
-    │   └── QC_Object.h5ad
+    │   ├── QC_Object.h5ad
+    │   └── Filtered_Object.h5ad
     └── qc_plots/
-        ├── Violin_log_genotype.png
-        ├── Violin_log_sex.png
-        ├── Violin_log_batch.png
-        ├── Scatter_UMIxMito.png
-        ├── Scatter_GenesxMito.png
-        └── Scatter_GenesxUMI.png
