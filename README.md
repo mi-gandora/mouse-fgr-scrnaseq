@@ -62,6 +62,11 @@ An end-to-end, production-grade single-cell RNA sequencing (scRNA-seq) workflow.
     - Rendered and saved the PCA variance ratio elbow plot (`results/qc_plots/PCA_Variance_Plot.png`).
     - Exported PCA-annotated dataset to `results/combined_data/PCA_Object.h5ad.`
 
+13. **Leiden Clustering & Marker Gene Ranking**
+     - Executed Leiden graph-based community clustering at resolution 0.5 (`sc.tl.leiden`).
+     - Ranked cluster-specific marker genes using a t-test against the rest of the groups (`sc.tl.rank_genes_groups`).
+     - Exported ranked marker genes table (`results/tables/Ranked_Genes_by_cluster.csv`) and saved final annotated object (`results/combined_data/DEG_Object.h5ad`).
+
 ## ⚙️ Environment Setup
 
 * **Environment Manager**: Conda / Mamba (`mouse_fetal_growth`).
@@ -95,6 +100,8 @@ An end-to-end, production-grade single-cell RNA sequencing (scRNA-seq) workflow.
    - Normalizes total count, log-transforms normalized values, identifies top 2,000 highly variable genes and scales gene expression to unit variance.
 11. **`./scripts/11_run_pca.sh`**
    - Computes 50 principal components across highly variable genes
+12. **`./scripts/13_run_leiden_and_markers.sh`**
+   - Executes Leiden graph-based community clustering and ranks cluster-specific marker genes
 
 ---
 
@@ -124,10 +131,14 @@ mouse-fgr-scrnaseq/
 │   ├── 10_normalize_log_hvg_scale.py # Python script for normalization, log1p, HVGs, and scaling
 │   ├── 10_normalize_log_hvg_scale.sh # Execution wrapper for preprocessing pipeline
 │   ├── 11_run_pca.py      # Python script for PCA computation and variance plotting
-│   └── 11_run_pca.sh      # Execution wrapper for PCA pipeline
+│   ├── 11_run_pca.sh      # Execution wrapper for PCA pipeline
+│   ├── 12_run_graph_and_embeddings.py # Python script for kNN graph, t-SNE, and UMAP
+│   ├── 12_run_graph_and_embeddings.sh # Execution wrapper for graph & embedding pipeline
+│   ├── 13_run_leiden_and_markers.py # Python script for Leiden clustering and marker ranking
+│   └── 13_run_leiden_and_markers.sh # Execution wrapper for clustering & marker pipeline
 ├── data/                   # (Local only) Raw FASTQ files & experimental metadata
 ├── ref/                    # (Local only) Reference genomes, transcript maps, and indexes
-└── results/                # (Local only) Alevin count matrices, h5ad files, and QC plots
+└── results/                # (Local only) Alevin count matrices, h5ad files, tables, and QC plots
     ├── alevin_output/
     ├── combined_data/
     │   ├── Combined_Object.h5ad
@@ -135,6 +146,10 @@ mouse-fgr-scrnaseq/
     │   ├── QC_Object.h5ad
     │   ├── Filtered_Object.h5ad
     │   ├── Normalized_Scaled_Object.h5ad
-    │   └── PCA_Object.h5ad
+    │   ├── PCA_Object.h5ad
+    │   ├── UMAP_Object.h5ad
+    │   └── DEG_Object.h5ad
+    ├── tables/
+    │   └── Ranked_Genes_by_cluster.csv
     └── qc_plots/
         └── PCA_Variance_Plot.png
