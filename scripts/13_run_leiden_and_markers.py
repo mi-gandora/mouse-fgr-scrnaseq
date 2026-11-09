@@ -43,17 +43,33 @@ def main():
     )
     
     print("\n=== STEP 4: Exporting Ranked Marker Genes to Tabular File ===")
-    # Extract ranked genes into a structured pandas DataFrame
     result = adata.uns['rank_genes_groups']
     groups = result['names'].dtype.names
     
-    markers_df = pd.DataFrame(
-        {group + '_' + key[:1]: result[key][group]
-        for group in groups
-        for key in ['names', 'scores', 'pvals', 'logfoldchanges']}
-    )
-    markers_df.to_csv(markers_csv, index=False)
-    print(f"Saved marker table: {markers_csv}")
+    # Check where gene symbols are stored (e.g., 'gene_symbols' or 'symbol' in adata.var)
+    if 'gene_symbols' in adata.var:
+        symbol_dict = dict(zip(adata.var.index, adata.var['gene_symbols']))
+    elif 'Symbol' in adata.var:
+        symbol_dict = dict(zip(adata.var.index, adata.var['Symbol']))
+    else:
+        symbol_dict = {gene: gene for gene in adata.var_names}
+
+    readable_dfs = []
+    for group in groups:
+        group_df = pd.DataFrame({
+            'gene_id': result['names'][group],
+            'score': result['scores'][group],
+            'pval': result['pvals'][group],
+            'logfoldchange': result['logfoldchanges'][group],
+            'cluster': group
+        })
+        # Map Ensembl IDs to gene symbols safely using the dictionary
+        group_df['gene_symbol'] = group_df['gene_id'].map(symbol_dict)
+        readable_dfs.append(group_df)
+
+    master_markers_df = pd.concat(readable_dfs, ignore_index=True)
+    master_markers_df.to_csv(markers_csv, index=False)
+    print(f"Saved readable marker table: {markers_csv}")
     
     print(f"\n=== STEP 5: Saving DEG AnnData Object ===")
     adata.write(output_h5ad)

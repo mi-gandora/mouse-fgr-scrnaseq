@@ -67,6 +67,12 @@ An end-to-end, production-grade single-cell RNA sequencing (scRNA-seq) workflow.
      - Ranked cluster-specific marker genes using a t-test against the rest of the groups (`sc.tl.rank_genes_groups`).
      - Exported ranked marker genes table (`results/tables/Ranked_Genes_by_cluster.csv`) and saved final annotated object (`results/combined_data/DEG_Object.h5ad`).
 
+14. **Embedding Multi-Panel Plotting**
+     - Generated multi-panel scatter plots for UMAP, t-SNE, and PCA with solid white backgrounds.
+
+15. **Cell-Type Annotation & Final Export**
+     - Mapped biological labels (`DP-M1`, `DP-L`, `DP-M3`, `T-mat`, `DN`, `DP-M2`, `Macrophages`) onto clusters, rendered annotated UMAP plots, and saved final object (`results/combined_data/Annotated_Object.h5ad`).
+
 ## ⚙️ Environment Setup
 
 * **Environment Manager**: Conda / Mamba (`mouse_fetal_growth`).
@@ -102,43 +108,50 @@ An end-to-end, production-grade single-cell RNA sequencing (scRNA-seq) workflow.
    - Computes 50 principal components across highly variable genes
 12. **`./scripts/13_run_leiden_and_markers.sh`**
    - Executes Leiden graph-based community clustering and ranks cluster-specific marker genes
+13. **`./scripts/14_plot_embeddings.sh`**
+   - Generates multi-panel scatter plots for UMAP, t-SNE, and PCA with solid white backgrounds
+14. **`./scripts/15_annotate_cell_types.sh`**
+   - Maps biological labels onto clusters and renders annotated UMAP plots
 
 ---
 
 ## 📁 Repository Structure
-
 ```text
 mouse-fgr-scrnaseq/
-├── README.md               # Project documentation and execution instructions
-├── environment.yml         # Exported Conda environment specifications
-├── .gitignore              # Ignores large raw FASTQs, references, and h5ad datasets
+├── README.md                                 # Project documentation and execution instructions
+├── environment.yml                           # Exported Conda environment specifications
+├── .gitignore                                # Ignores large raw FASTQs, references, and h5ad datasets
 ├── scripts/
-│   ├── 01_download_data.sh # Fetches raw FASTQs, GTF/FASTA references, and N702-N707 AnnData samples
-│   ├── 02_build_tx2gene.sh # GTF parsing (tx2gene map) and seqkit FASTA filtering
-│   ├── 03_run_alevin.sh   # Salmon indexing and Alevin single-cell quantification
-│   ├── 04_qc_plots.py     # Python script to render log-log barcode rank plots
-│   ├── 04_run_qc.sh       # Execution wrapper for raw barcode QC processing
-│   ├── 05_run_emptydrops.py # Python script for MTX transformation & emptyDrops filtering
-│   ├── 05_run_emptydrops.sh # Execution wrapper for statistical emptyDrops filtering
-│   ├── 06_concatenate_samples.py # Python script to concatenate N701-N707 AnnData objects
-│   ├── 06_concatenate_samples.sh # Execution wrapper for multi-sample concatenation
-│   ├── 07_add_metadata.py # Python script to add sex, genotype, and batch categories
-│   ├── 07_add_metadata.sh # Execution wrapper for metadata annotation
-│   ├── 08_calculate_qc_metrics.py # Python script for QC metrics & visualization
-│   ├── 08_calculate_qc_metrics.sh # Execution wrapper for QC metrics pipeline
-│   ├── 09_filter_cells_and_genes.py # Python script to apply cell QC thresholds & min_cells gene filter
-│   ├── 09_filter_cells_and_genes.sh # Execution wrapper for cell and gene filtering
-│   ├── 10_normalize_log_hvg_scale.py # Python script for normalization, log1p, HVGs, and scaling
-│   ├── 10_normalize_log_hvg_scale.sh # Execution wrapper for preprocessing pipeline
-│   ├── 11_run_pca.py      # Python script for PCA computation and variance plotting
-│   ├── 11_run_pca.sh      # Execution wrapper for PCA pipeline
-│   ├── 12_run_graph_and_embeddings.py # Python script for kNN graph, t-SNE, and UMAP
-│   ├── 12_run_graph_and_embeddings.sh # Execution wrapper for graph & embedding pipeline
-│   ├── 13_run_leiden_and_markers.py # Python script for Leiden clustering and marker ranking
-│   └── 13_run_leiden_and_markers.sh # Execution wrapper for clustering & marker pipeline
-├── data/                   # (Local only) Raw FASTQ files & experimental metadata
-├── ref/                    # (Local only) Reference genomes, transcript maps, and indexes
-└── results/                # (Local only) Alevin count matrices, h5ad files, tables, and QC plots
+│   ├── 01_download_data.sh                   # Fetches raw FASTQs, GTF/FASTA references, and N702-N707 AnnData samples
+│   ├── 02_build_tx2gene.sh                   # GTF parsing (tx2gene map) and seqkit FASTA filtering
+│   ├── 03_run_alevin.sh                      # Salmon indexing and Alevin single-cell quantification
+│   ├── 04_qc_plots.py                        # Python script to render log-log barcode rank plots
+│   ├── 04_run_qc.sh                          # Execution wrapper for raw barcode QC processing
+│   ├── 05_run_emptydrops.py                  # Python script for MTX transformation & emptyDrops filtering
+│   ├── 05_run_emptydrops.sh                  # Execution wrapper for statistical emptyDrops filtering
+│   ├── 06_concatenate_samples.py             # Python script to concatenate N701-N707 AnnData objects
+│   ├── 06_concatenate_samples.sh             # Execution wrapper for multi-sample concatenation
+│   ├── 07_add_metadata.py                    # Python script to add sex, genotype, and batch categories
+│   ├── 07_add_metadata.sh                    # Execution wrapper for metadata annotation
+│   ├── 08_calculate_qc_metrics.py            # Python script for QC metrics & visualization
+│   ├── 08_calculate_qc_metrics.sh            # Execution wrapper for QC metrics pipeline
+│   ├── 09_filter_cells_and_genes.py          # Python script to apply cell QC thresholds & min_cells gene filter
+│   ├── 09_filter_cells_and_genes.sh          # Execution wrapper for cell and gene filtering
+│   ├── 10_normalize_log_hvg_scale.py         # Python script for normalization, log1p, HVGs, and scaling
+│   ├── 10_normalize_log_hvg_scale.sh         # Execution wrapper for preprocessing pipeline
+│   ├── 11_run_pca.py                         # Python script for PCA computation and variance plotting
+│   ├── 11_run_pca.sh                         # Execution wrapper for PCA pipeline
+│   ├── 12_run_graph_and_embeddings.py        # Python script for kNN graph, t-SNE, and UMAP
+│   ├── 12_run_graph_and_embeddings.sh        # Execution wrapper for graph & embedding pipeline
+│   ├── 13_run_leiden_and_markers.py          # Python script for Leiden clustering and marker ranking
+│   ├── 13_run_leiden_and_markers.sh          # Execution wrapper for clustering & marker pipeline
+│   ├── 14_plot_embeddings.py                 # Python script for multipanel UMAP, t-SNE, and PCA plotting
+│   ├── 14_plot_embeddings.sh                 # Execution wrapper for embedding visualization
+│   ├── 15_annotate_cell_types.py             # Python script for mapping biological cell-type labels
+│   └── 15_annotate_cell_types.sh             # Execution wrapper for cell type annotation
+├── data/                                     # (Local only) Raw FASTQ files & experimental metadata
+├── ref/                                      # (Local only) Reference genomes, transcript maps, and indexes
+└── results/                                  # (Local only) Alevin count matrices, h5ad files, tables, and QC plots
     ├── alevin_output/
     ├── combined_data/
     │   ├── Combined_Object.h5ad
@@ -148,8 +161,13 @@ mouse-fgr-scrnaseq/
     │   ├── Normalized_Scaled_Object.h5ad
     │   ├── PCA_Object.h5ad
     │   ├── UMAP_Object.h5ad
-    │   └── DEG_Object.h5ad
+    │   ├── DEG_Object.h5ad
+    │   └── Annotated_Object.h5ad
     ├── tables/
     │   └── Ranked_Genes_by_cluster.csv
     └── qc_plots/
-        └── PCA_Variance_Plot.png
+        ├── PCA_Variance_Plot.png
+        ├── UMAP_Multipanel_Plot.png
+        ├── tSNE_Multipanel_Plot.png
+        ├── PCA_Multipanel_Plot.png
+        └── UMAP_Cell_Types_Plot.png
