@@ -103,15 +103,15 @@ An end-to-end, production-grade single-cell RNA sequencing (scRNA-seq) workflow.
 9. **`./scripts/09_filter_cells_and_genes.sh`**
    - Filter low-quality cells and remove unexpressed genes
 10. **`./scripts/10_normalize_log_hvg_scale.sh`**
-   - Normalizes total count, log-transforms normalized values, identifies top 2,000 highly variable genes and scales gene expression to unit variance.
+    - Normalizes total count, log-transforms normalized values, identifies top 2,000 highly variable genes and scales gene expression to unit variance.
 11. **`./scripts/11_run_pca.sh`**
-   - Computes 50 principal components across highly variable genes
+    - Computes 50 principal components across highly variable genes
 12. **`./scripts/13_run_leiden_and_markers.sh`**
-   - Executes Leiden graph-based community clustering and ranks cluster-specific marker genes
+    - Executes Leiden graph-based community clustering and ranks cluster-specific marker genes
 13. **`./scripts/14_plot_embeddings.sh`**
-   - Generates multi-panel scatter plots for UMAP, t-SNE, and PCA with solid white backgrounds
+    - Generates multi-panel scatter plots for UMAP, t-SNE, and PCA with solid white backgrounds
 14. **`./scripts/15_annotate_cell_types.sh`**
-   - Maps biological labels onto clusters and renders annotated UMAP plots
+    - Maps biological labels onto clusters and renders annotated UMAP plots
 
 ---
 
