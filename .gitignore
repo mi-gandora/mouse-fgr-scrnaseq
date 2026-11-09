@@ -9,7 +9,10 @@
 
 # Ignore Salmon/Alevin indexes & output folders
 salmon_index/
-results/
+*.log
+*.tsv
+*.txt
+*.gz
 *.h5ad
 
 # Ignore OS/Python junk
