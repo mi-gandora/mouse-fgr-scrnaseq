@@ -73,6 +73,32 @@ An end-to-end, production-grade single-cell RNA sequencing (scRNA-seq) workflow.
 15. **Cell-Type Annotation & Final Export**
      - Mapped biological labels (`DP-M1`, `DP-L`, `DP-M3`, `T-mat`, `DN`, `DP-M2`, `Macrophages`) onto clusters, rendered annotated UMAP plots, and saved final object (`results/combined_data/Annotated_Object.h5ad`).
 
+16. **Neighborhood Graph & UMAP Embedding**
+    - Computed neighborhood graph across principal components (`sc.pp.neighbors`) and generated UMAP embedding (`sc.tl.umap`).
+    - Exported UMAP-annotated object (`results/combined_data/UMAP_Object.h5ad`).
+
+17. **Diffusion Map Calculation**
+    - Computed non-linear diffusion components (`sc.tl.diffmap`) to capture continuous developmental manifolds.
+    - Exported diffusion-annotated object (`results/combined_data/Diffusion_Object.h5ad`).
+
+18. **Diffusion-Based Force-Directed Graph (FDG)**
+    - Generated ForceAtlas2 embeddings (`sc.tl.draw_graph`) from diffusion components to spread out continuous biological transitions.
+    - Exported FDG-annotated object (`results/combined_data/FDG_Object.h5ad`).
+
+19. **Partition-based Graph Abstraction (PAGA)**
+    - Executed PAGA analysis on cell types to model network connectivity and initialized PAGA-guided ForceAtlas2 embeddings.
+    - Exported PAGA-annotated object (`results/combined_data/PAGA_Object.h5ad`).
+
+20. **Genotype Comparative FDG Visualization**
+    - Rendered Force-Directed Graphs colored by mouse genotype (`wildtype` vs `knockout`) to highlight developmental bottlenecks in knockout terminal branches.
+
+21. **Mature T-Cell Marker Gene Expression Mapping**
+    - Mapped expression levels of mature T-cell marker genes `Cd4` (`ENSMUSG00000023274`) and `Cd8` (`ENSMUSG00000053977`) across the embedding.
+
+22. **Diffusion Pseudotime (DPT) Inference**
+    - Assigned Double Negative (`DN`) cells as the root (`iroot`) and calculated Diffusion Pseudotime to establish a numerical developmental clock ($0 \to 1$).
+    - Exported DPT-annotated dataset (`results/combined_data/DPT_Object.h5ad`).
+
 ## ⚙️ Environment Setup
 
 * **Environment Manager**: Conda / Mamba (`mouse_fetal_growth`).
@@ -81,6 +107,12 @@ An end-to-end, production-grade single-cell RNA sequencing (scRNA-seq) workflow.
   ```bash
   conda env create -f environment.yml
   conda activate single_cell_env
+
+## 🧬 Key Biological Findings & Insights
+
+* **Genotype-Driven Developmental Bottleneck**: Comparative Force-Directed Graph (FDG) visualization between wildtype and knockout (`knockout`) mice revealed that while both groups share early and intermediate precursor states (`DN`, `DP-M1`, `DP-M2`, `DP-M3`), knockout cells fail to successfully populate the terminal branches leading to fully mature T-cell states (`T-mat`). This confirms the expected in-vivo phenotype of impaired thymic maturation resulting from placental gene disruption.
+* **Marker Gene Validation (`Cd4` & `Cd8`)**: Spatial expression mapping of Ensembl-annotated mature T-cell markers (`Cd4` via `ENSMUSG00000023274` and `Cd8` via `ENSMUSG00000053977`) successfully captured the transitional Double-Positive (DP) phase, validating that cells co-express these markers before branching out into single-positive mature lineages.
+* **Pseudotime Progression**: Diffusion Pseudotime (DPT) successfully established a directional numerical timeline ($0 \to 1$) anchored at the Double Negative (`DN`) root population, quantifying the developmental velocity and confirming the maturation arrest in knockout thymocytes.
 
 ## 🚀 Pipeline Execution Scripts
 
@@ -112,11 +144,26 @@ An end-to-end, production-grade single-cell RNA sequencing (scRNA-seq) workflow.
     - Generates multi-panel scatter plots for UMAP, t-SNE, and PCA with solid white backgrounds
 14. **`./scripts/15_annotate_cell_types.sh`**
     - Maps biological labels onto clusters and renders annotated UMAP plots
+15. **`./scripts/16_clustering_umap.sh`**
+    - Computes neighborhood graph and generates UMAP embedding.
+16. **`./scripts/17_diffusion_map.sh`**
+    - Computes diffusion components to capture continuous trajectories.
+17. **`./scripts/18_fdg_embedding.sh`**
+    - Generates Diffusion-Based Force-Directed Graph (ForceAtlas2).
+18. **`./scripts/19_run_paga.sh`**
+    - Computes PAGA connectivity and initializes PAGA-guided FDG.
+19. **`./scripts/20_plot_fdg_genotype.sh`**
+    - Renders FDG plots colored by mouse genotype.
+20. **`./scripts/21_plot_gene_expression.sh`**
+    - Maps expression of mature T-cell markers Cd4 and Cd8.
+21. **`./scripts/22_diffusion_pseudotime.sh`**
+    - Calculates Diffusion Pseudotime with DN root and renders timeline plots.
 
 ---
 
 ## 📁 Repository Structure
-```text
+
+Plaintext
 mouse-fgr-scrnaseq/
 ├── README.md                                 # Project documentation and execution instructions
 ├── environment.yml                           # Exported Conda environment specifications
@@ -148,10 +195,25 @@ mouse-fgr-scrnaseq/
 │   ├── 14_plot_embeddings.py                 # Python script for multipanel UMAP, t-SNE, and PCA plotting
 │   ├── 14_plot_embeddings.sh                 # Execution wrapper for embedding visualization
 │   ├── 15_annotate_cell_types.py             # Python script for mapping biological cell-type labels
-│   └── 15_annotate_cell_types.sh             # Execution wrapper for cell type annotation
+│   ├── 15_annotate_cell_types.sh             # Execution wrapper for cell type annotation
+│   ├── 16_clustering_umap.py                 # Python script for kNN graph and UMAP computation
+│   ├── 16_clustering_umap.sh                 # Execution wrapper for UMAP pipeline
+│   ├── 17_diffusion_map.py                   # Python script for diffusion map component calculation
+│   ├── 17_diffusion_map.sh                   # Execution wrapper for diffusion map pipeline
+│   ├── 18_fdg_embedding.py                   # Python script for Force-Directed Graph (ForceAtlas2)
+│   ├── 18_fdg_embedding.sh                   # Execution wrapper for FDG pipeline
+│   ├── 19_run_paga.py                        # Python script for Partition-based Graph Abstraction (PAGA)
+│   ├── 19_run_paga.sh                        # Execution wrapper for PAGA and PAGA-guided FDG
+│   ├── 20_plot_fdg_genotype.py               # Python script for genotype-colored FDG visualization
+│   ├── 20_plot_fdg_genotype.sh               # Execution wrapper for genotype FDG plotting
+│   ├── 21_plot_gene_expression.py            # Python script for Cd4 and Cd8 marker expression plotting
+│   ├── 21_plot_gene_expression.sh            # Execution wrapper for gene expression pipeline
+│   ├── 22_diffusion_pseudotime.py            # Python script for Diffusion Pseudotime (DPT) calculation
+│   └── 22_diffusion_pseudotime.sh            # Execution wrapper for DPT pipeline
 ├── data/                                     # (Local only) Raw FASTQ files & experimental metadata
 ├── ref/                                      # (Local only) Reference genomes, transcript maps, and indexes
 └── results/                                  # (Local only) Alevin count matrices, h5ad files, tables, and QC plots
+    ├── biological_findings.md                # Detailed biological interpretation of knockout and marker findings
     ├── alevin_output/
     ├── combined_data/
     │   ├── Combined_Object.h5ad
@@ -162,7 +224,11 @@ mouse-fgr-scrnaseq/
     │   ├── PCA_Object.h5ad
     │   ├── UMAP_Object.h5ad
     │   ├── DEG_Object.h5ad
-    │   └── Annotated_Object.h5ad
+    │   ├── Annotated_Object.h5ad
+    │   ├── Diffusion_Object.h5ad
+    │   ├── FDG_Object.h5ad
+    │   ├── PAGA_Object.h5ad
+    │   └── DPT_Object.h5ad
     ├── tables/
     │   └── Ranked_Genes_by_cluster.csv
     └── qc_plots/
@@ -170,4 +236,13 @@ mouse-fgr-scrnaseq/
         ├── UMAP_Multipanel_Plot.png
         ├── tSNE_Multipanel_Plot.png
         ├── PCA_Multipanel_Plot.png
-        └── UMAP_Cell_Types_Plot.png
+        ├── UMAP_Cell_Types_Plot.png
+        ├── Diffusion_Map_Plot.png
+        ├── Diffusion_FDG_Cell_Types_Plot.png
+        ├── PAGA_Network_Plot.png
+        ├── PAGA_Initialized_FDG_Plot.png
+        ├── FDG_Genotype_Plot.png
+        ├── FDG_Gene_Expression_Cd4.png
+        ├── FDG_Gene_Expression_Cd8.png
+        ├── DPT_Plot_cell_type.png
+        └── DPT_Plot_dpt_pseudotime.png
