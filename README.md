@@ -163,7 +163,7 @@ An end-to-end, production-grade single-cell RNA sequencing (scRNA-seq) workflow.
 
 ## 📁 Repository Structure
 
-Plaintext
+```Plaintext
 mouse-fgr-scrnaseq/
 ├── README.md                                 # Project documentation and execution instructions
 ├── environment.yml                           # Exported Conda environment specifications
